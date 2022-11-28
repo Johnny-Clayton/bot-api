@@ -14,7 +14,7 @@ public class ScrapingUtil {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ScrapingUtil.class);
 	
-	private static final String BASE_URL_GOOGLE = "https://www.google.com.br/?search/q="; //https://www.google.com/?search/q=
+	private static final String BASE_URL_GOOGLE = "https://www.google.com.br/?search/q="; 
 	private static final String COMPLEMENTO_URL_GOOGLE = "&hl=pt-BR";
 	
 	public static void main(String[] args) {
@@ -24,7 +24,8 @@ public class ScrapingUtil {
 		System.out.println("Informa a o jogo: ");
 		String complemento = sc.nextLine().replace(" ", "+");
 				
-//				"argentina+x+méxico";
+//		argentina x méxico
+//		camarões x sérvia
 		
 		String url = "https://www.google.com/search?q=" + complemento;
 //		String url = "https://www.google.com/search?q=tun%C3%ADsia+x+austr%C3%A1lia";  
@@ -48,10 +49,11 @@ public class ScrapingUtil {
 			String title = document.title();
 			LOGGER.info("Titulo da pagína: {}", title);
 			
-			String partidaStatus = obtemStatusPartida(document).toString();
-			String partidaTempo = obtemTempoPartida(document);
+			StatusPartida statusPartida = obtemStatusPartida(document);
+			LOGGER.info("Status da partida: {}",statusPartida);
 			
-//			LOGGER.info("Status: {}", partid);
+			String tempoPartida = obtemTempoPartida(document);
+			LOGGER.info("Tempo da partida: {}",tempoPartida);
 			
 		} catch (IOException e) {
 			LOGGER.error("ERRO AO CONECTAR NA URL COM JSOUP -> {}", e.getMessage());
@@ -72,7 +74,6 @@ public class ScrapingUtil {
 			if(tempoPartida.contains("Pênaltis")) {
 				statusPartida = StatusPartida.PARTIDA_PENATIS;
 			}
-			LOGGER.info(tempoPartida);
 		}
 		
 		isTempoPardida = document.select("span[class=imso_mh__ft-mtch imso-medium-font imso_mh__ft-mtchc]").isEmpty();
@@ -80,7 +81,6 @@ public class ScrapingUtil {
 		if(!isTempoPardida) {
 			statusPartida = StatusPartida.PARTIDA_ENCERRADA;
 		}
-		LOGGER.info(statusPartida.toString());
 		return statusPartida;
 
 	}
@@ -99,8 +99,16 @@ public class ScrapingUtil {
 		if(!isTempoPardida) {
 			tempoPartida = document.select("span[class=imso_mh__ft-mtch imso-medium-font imso_mh__ft-mtchc]").first().text();
 		}
-		LOGGER.info(tempoPartida);
-		return tempoPartida.replace("'", "min");
+		return corrigrTempoPartida(tempoPartida);
+	}
+	
+	public String corrigrTempoPartida(String tempo) {
+		if(tempo.contains("'")) {
+			return tempo = tempo.replace("'", " min");
+		} else {
+			return tempo;
+		}
+		
 	}
 
 }
