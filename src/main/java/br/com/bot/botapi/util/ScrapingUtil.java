@@ -5,6 +5,7 @@ import java.util.Scanner;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,13 +48,30 @@ public class ScrapingUtil {
 			document = Jsoup.connect(url).get();
 			
 			String title = document.title();
-			LOGGER.info("Titulo da pagína: {}", title);
+			LOGGER.info("Titulo da Partida: {}", title);
 			
 			StatusPartida statusPartida = obtemStatusPartida(document);
-			LOGGER.info("Status da partida: {}",statusPartida);
+			LOGGER.info("Status da Partida: {}",statusPartida);
 			
-			String tempoPartida = obtemTempoPartida(document);
-			LOGGER.info("Tempo da partida: {}",tempoPartida);
+			if(statusPartida != StatusPartida.PARTIDA_NAO_INICIADA) {
+				String tempoPartida = obtemTempoPartida(document);
+				LOGGER.info("Tempo da Partida: {}",tempoPartida);
+			}
+			
+			String nomeEquipeCasa = recuperaNomeEquipeCasa(document);
+			LOGGER.info("Nome da Equipe da Casa: {}",nomeEquipeCasa);
+			
+			String urlLogoEquipeCasa = recuperaLogoEquipeCasa(document);
+			LOGGER.info("Url logo equipe Casa: {}",urlLogoEquipeCasa);
+			
+			String urlLogoEquipeVisitante = recuperaLogoEquipeVisitante(document);
+			LOGGER.info("Url logo equipe Visitante: {}",urlLogoEquipeVisitante);
+			
+			String nomeEquipeVisitante = recuperaNomeEquipeVisitante(document);
+			LOGGER.info("Nome da Equipe da Visitante: {}",nomeEquipeVisitante);
+			
+			String placarTeste = placarTeste(document);
+			LOGGER.info("Placar Atual: {}", placarTeste);
 			
 		} catch (IOException e) {
 			LOGGER.error("ERRO AO CONECTAR NA URL COM JSOUP -> {}", e.getMessage());
@@ -107,8 +125,46 @@ public class ScrapingUtil {
 			return tempo = tempo.replace("'", " min");
 		} else {
 			return tempo;
-		}
+		}	
+	}
+	
+	public String recuperaNomeEquipeCasa(Document document) {
+	
+		Element elemento = document.selectFirst("div[class=imso_mh__first-tn-ed imso_mh__tnal-cont imso-tnol]");
+		String nomeEquipe =elemento.select("span").text();
 		
+		return nomeEquipe;
+	}
+	
+	public String recuperaNomeEquipeVisitante(Document document) {
+		
+		Element elemento = document.selectFirst("div[class=imso_mh__second-tn-ed imso_mh__tnal-cont imso-tnol]");
+		String nomeEquipeVisitante =elemento.select("span").text();
+		
+		return nomeEquipeVisitante;
+	}
+	
+	public String recuperaLogoEquipeCasa(Document document) {
+		
+		Element elemento = document.selectFirst("div[class=imso_mh__first-tn-ed imso_mh__tnal-cont imso-tnol]");
+		String urlLogo = "https:" + elemento.select("img[class=imso_btl__mh-logo]").attr("src");
+		//Arrumar link
+		return urlLogo;
+	}
+	
+	public String recuperaLogoEquipeVisitante(Document document) {
+		
+		Element elemento = document.selectFirst("div[class=imso_mh__second-tn-ed imso_mh__tnal-cont imso-tnol]");
+		String urlLogoVisitante = "https:" + elemento.select("img[class=imso_btl__mh-logo]").attr("src");
+		//Arrumar link
+		return urlLogoVisitante;
+	}
+	
+	public String placarTeste(Document document) {
+		
+		String placarTeste = document.selectFirst("div[class=kno-fb-ctx]").text();
+		
+		return placarTeste;
 	}
 
 }
