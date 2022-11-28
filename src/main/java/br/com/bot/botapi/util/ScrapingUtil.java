@@ -1,11 +1,14 @@
 package br.com.bot.botapi.util;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,13 +56,31 @@ public class ScrapingUtil {
 			StatusPartida statusPartida = obtemStatusPartida(document);
 			LOGGER.info("Status da Partida: {}",statusPartida);
 			
+			String nomeEquipeCasa = recuperaNomeEquipeCasa(document);
+//			LOGGER.info("Nome da Equipe da Casa: {}",nomeEquipeCasa);
+			
+			String nomeEquipeVisitante = recuperaNomeEquipeVisitante(document);
+//			LOGGER.info("Nome da Equipe da Visitante: {}",nomeEquipeVisitante);
+			
 			if(statusPartida != StatusPartida.PARTIDA_NAO_INICIADA) {
 				String tempoPartida = obtemTempoPartida(document);
 				LOGGER.info("Tempo da Partida: {}",tempoPartida);
+				
+				Integer placarDaCasa = placarDaCasa(document);
+				LOGGER.info("Placar do(a) "+ nomeEquipeCasa + ": {}", placarDaCasa);
+				
+				Integer placarDoVisitante = placarDoVisitante(document);
+				LOGGER.info("Placar do(a) "+ nomeEquipeVisitante +": {}", placarDoVisitante);
+				
 			}
+			String golsEquipeCasa = recuperaGolsEquipeCasa(document);
+			LOGGER.info("Gols do(a) "+ nomeEquipeCasa + ": {}",golsEquipeCasa);
 			
-			String nomeEquipeCasa = recuperaNomeEquipeCasa(document);
-			LOGGER.info("Nome da Equipe da Casa: {}",nomeEquipeCasa);
+			String golsEquipeVisitante = recuperaGolsEquipeVisitante(document);
+			LOGGER.info("Gols do(a) "+ nomeEquipeVisitante + ": {}",golsEquipeVisitante);
+			
+			String dataDaPartida = recuperaDataDaPartida(document);
+			LOGGER.info("Data da Partida: {}",dataDaPartida);
 			
 			String urlLogoEquipeCasa = recuperaLogoEquipeCasa(document);
 			LOGGER.info("Url logo equipe Casa: {}",urlLogoEquipeCasa);
@@ -67,11 +88,9 @@ public class ScrapingUtil {
 			String urlLogoEquipeVisitante = recuperaLogoEquipeVisitante(document);
 			LOGGER.info("Url logo equipe Visitante: {}",urlLogoEquipeVisitante);
 			
-			String nomeEquipeVisitante = recuperaNomeEquipeVisitante(document);
-			LOGGER.info("Nome da Equipe da Visitante: {}",nomeEquipeVisitante);
 			
-			String placarTeste = placarTeste(document);
-			LOGGER.info("Placar Atual: {}", placarTeste);
+			
+			
 			
 		} catch (IOException e) {
 			LOGGER.error("ERRO AO CONECTAR NA URL COM JSOUP -> {}", e.getMessage());
@@ -160,11 +179,55 @@ public class ScrapingUtil {
 		return urlLogoVisitante;
 	}
 	
-	public String placarTeste(Document document) {
+	public Integer placarDaCasa(Document document) {
 		
-		String placarTeste = document.selectFirst("div[class=kno-fb-ctx]").text();
+		String placarDaCasa = document.selectFirst("div[class=imso_mh__l-tm-sc imso_mh__scr-it imso-light-font]").text();
 		
-		return placarTeste;
+		return Integer.valueOf(placarDaCasa);
+	}
+	
+	public Integer placarDoVisitante(Document document) {
+		
+		String placarDoVisitante = document.selectFirst("div[class=imso_mh__r-tm-sc imso_mh__scr-it imso-light-font]").text();
+		
+		return Integer.valueOf(placarDoVisitante);
+	}
+	
+	public String recuperaGolsEquipeCasa(Document document) {
+		
+		List<String> golsEquipe = new ArrayList<>();
+		Elements elementos = document.select("div[class=imso_gs__tgs imso_gs__left-team]").select("div[class=imso_gs__gs-r]");
+		for(Element e : elementos) {
+			String infoGols = e.select("div[class=imso_gs__gs-r]").text();
+			golsEquipe.add(infoGols);
+		}
+		if(golsEquipe.isEmpty()) {
+			return "Sem Gol";
+		}
+		
+		return String.join(", ", golsEquipe);
+	}
+	
+	public String recuperaGolsEquipeVisitante(Document document) {
+		
+		List<String> golsEquipe = new ArrayList<>();
+		Elements elementos = document.select("div[class=imso_gs__tgs imso_gs__right-team]").select("div[class=imso_gs__gs-r]");
+		for(Element e : elementos) {
+			String infoGols = e.select("div[class=imso_gs__gs-r]").text();
+			golsEquipe.add(infoGols);
+		}
+		if(golsEquipe.isEmpty()) {
+			return "Sem Gol";
+		}
+		
+		return String.join(", ", golsEquipe);
+	}
+	
+	public String recuperaDataDaPartida(Document document) {
+	
+		String dataPartida = document.select("div.imso_mh__stts-l.imso-ani.imso_mh__stts-l-cont > div > div > span:nth-child(2)").text();
+		
+		return dataPartida;
 	}
 
 }
