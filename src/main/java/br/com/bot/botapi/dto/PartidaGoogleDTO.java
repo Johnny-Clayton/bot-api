@@ -18,6 +18,7 @@ public class PartidaGoogleDTO implements Serializable{
 	
 	private String statusPartida;
 	private String tempoPartida;
+	private String dataDaPartida;
 	
 	//into da Casa
 	private String nomeEquipeCasa;
@@ -106,6 +107,13 @@ public class PartidaGoogleDTO implements Serializable{
 		this.placarEstendidoEquipeVisitante = placarEstendidoEquipeVisitante;
 	}
 	
+	public String getdataDaPartida() {
+		return dataDaPartida;
+	}
+	public void setdataDaPartida(String dataDaPartida) {
+		this.dataDaPartida = dataDaPartida;
+	}
+	
 	public PartidaGoogleDTO() {
 		super();
 		
@@ -113,7 +121,7 @@ public class PartidaGoogleDTO implements Serializable{
 	public PartidaGoogleDTO(String statusPartida, String tempoPartida, String nomeEquipeCasa, String urlLogoEquipeCasa,
 			Integer placarEquipeCasa, String golsEquipeCasa, String placarEstendidoEquipeCasa,
 			String nomeEquipeVisitante, String urlLogoEquipeVisitante, Integer placarEquipeVisitante,
-			String golsEquipeVisitante, String placarEstendidoEquipeVisitante) {
+			String golsEquipeVisitante, String placarEstendidoEquipeVisitante, String dataDaPartida) {
 		super();
 		this.statusPartida = statusPartida;
 		this.tempoPartida = tempoPartida;
@@ -127,5 +135,6 @@ public class PartidaGoogleDTO implements Serializable{
 		this.placarEquipeVisitante = placarEquipeVisitante;
 		this.golsEquipeVisitante = golsEquipeVisitante;
 		this.placarEstendidoEquipeVisitante = placarEstendidoEquipeVisitante;
+		this.dataDaPartida = dataDaPartida;
 	}
 }

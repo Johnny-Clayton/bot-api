@@ -11,15 +11,16 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import br.com.bot.botapi.dto.PartidaGoogleDTO;
 
+@Service
 public class ScrapingUtil {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ScrapingUtil.class);
 	
-//	private static final String BASE_URL_GOOGLE = "https://www.google.com.br/?search/q="; 
-//	private static final String COMPLEMENTO_URL_GOOGLE = "&hl=pt-BR";
+	private static final String BASE_URL_GOOGLE = "https://www.google.com.br/search?q="; 
 	
 	private static final String DIV_PARTIDA_ANDAMENTO = "div[class=imso_mh__lv-m-stts-cont]";
 	private static final String DIV_PARTIDA_ENCERRADA = "span[class=imso_mh__ft-mtch imso-medium-font imso_mh__ft-mtchc]";
@@ -39,26 +40,20 @@ public class ScrapingUtil {
 	private static final String CASA = "casa"; 
 	private static final String VISITANTE = "visitante";
 	
-	public static void main(String[] args) {
-
-		Scanner sc = new Scanner(System.in);
-		
-		System.out.println("Informa a o jogo: ");
-		String complemento = sc.nextLine().replace(" ", "+");
-				
-//		argentina x méxico
-//		camarões x sérvia
-		
-		String url = "https://www.google.com.br/search?q=" + complemento;
-//		String url = "https://www.google.com/search?q=Flamengo+x+Corinthians+final#sie=m;/g/11tfysh1xw;2;/m/04wpb1;dt;fp;1;;;";  
-//		String url = BASE_URL_GOOGLE + complemento; 
-		
-		ScrapingUtil scraping = new ScrapingUtil();
-		scraping.obtemInformacoesPartida(url);
-		
-		PartidaGoogleDTO par = new PartidaGoogleDTO();
-		
-	}
+//	public static void main(String[] args) {
+//
+//		Scanner sc = new Scanner(System.in);
+//		
+//		System.out.println("Informa a o jogo: ");
+//		String complemento = sc.nextLine();		
+//		
+//		ScrapingUtil scraping = new ScrapingUtil();
+//		String url = scraping.montaUrlGoogle(complemento);
+//		scraping.obtemInformacoesPartida(url);
+//		
+//		PartidaGoogleDTO par = new PartidaGoogleDTO();
+//		
+//	}
 	
 	public PartidaGoogleDTO obtemInformacoesPartida(String url) {
 		
@@ -72,38 +67,49 @@ public class ScrapingUtil {
 			LOGGER.info("Titulo da Partida: {}", title);
 			
 			StatusPartida statusPartida = obtemStatusPartida(document);
+			partida.setStatusPartida(statusPartida.toString());
 			LOGGER.info("Status da Partida: {}",statusPartida);
 			
 			String nomeEquipeCasa = recuperaNomeEquipe(document, DIV_DADOS_EQUIPE_CASA, 0);
-//			LOGGER.info("Nome da Equipe da Casa: {}",nomeEquipeCasa);
+			partida.setNomeEquipeCasa(nomeEquipeCasa);
+			LOGGER.info("Equipe: {}",nomeEquipeCasa);
 			
 			String nomeEquipeVisitante = recuperaNomeEquipe(document, DIV_DADOS_EQUIPE_VISITANTE, 1);
-//			LOGGER.info("Nome da Equipe da Visitante: {}",nomeEquipeVisitante);
-			
+			partida.setNomeEquipeVisitante(nomeEquipeVisitante);
+			LOGGER.info("Equipe: {}",nomeEquipeVisitante);
+
 			if(statusPartida != StatusPartida.PARTIDA_NAO_INICIADA) {
 				String tempoPartida = obtemTempoPartida(document);
+				partida.setTempoPartida(tempoPartida);
 				LOGGER.info("Tempo da Partida: {}",tempoPartida);
 				
 				Integer placarDaCasa = placarDaEquipe(document, DIC_PLACAR_EQUIPE_CASA);
+				partida.setPlacarEquipeCasa(placarDaCasa);
 				LOGGER.info("Placar do(a) "+ nomeEquipeCasa + ": {}", placarDaCasa);
 				
 				Integer placarDoVisitante = placarDaEquipe(document, DIC_PLACAR_EQUIPE_VISITANTE);
+				partida.setPlacarEquipeVisitante(placarDoVisitante);
 				LOGGER.info("Placar do(a) "+ nomeEquipeVisitante +": {}", placarDoVisitante);
 				
 				Integer placarEstendidoEquipeCasa = buscaPenalidades(document, CASA); //nomeEquipeCasa
+				partida.setPlacarEquipeCasa(placarEstendidoEquipeCasa);
 				LOGGER.info("Pênaltis do(a) "+ nomeEquipeCasa +": {}", placarEstendidoEquipeCasa);
 				
 				Integer placarEstendidoEquipeVisitante = buscaPenalidades(document, VISITANTE); //nomeEquipeVisitante
+				partida.setPlacarEquipeVisitante(placarEstendidoEquipeVisitante);
 				LOGGER.info("Pênaltis do(a) "+ nomeEquipeVisitante +": {}", placarEstendidoEquipeVisitante);
 			}
 
 			String golsEquipeCasa = recuperaGolsEquipe(document, DIC_GOLS_EQUIPE_CASA);
+			partida.setGolsEquipeCasa(golsEquipeCasa);
 			LOGGER.info("Gols do(a) "+ nomeEquipeCasa + ": {}",golsEquipeCasa);
 			
 			String golsEquipeVisitante = recuperaGolsEquipe(document, DIC_GOLS_EQUIPE_VISITANTE);
+			partida.setGolsEquipeVisitante(golsEquipeVisitante);
 			LOGGER.info("Gols do(a) "+ nomeEquipeVisitante + ": {}",golsEquipeVisitante);
 			
 			String dataDaPartida = recuperaDataDaPartida(document);
+			partida.setdataDaPartida(dataDaPartida);
 			LOGGER.info("Data da Partida: {}",dataDaPartida);
 			
 //			String urlLogoEquipeCasa = recuperaLogoEquipe(document, DIV_DADOS_EQUIPE_CASA);
@@ -111,14 +117,13 @@ public class ScrapingUtil {
 //			
 //			String urlLogoEquipeVisitante = recuperaLogoEquipe(document, DIC_DADOS_EQUIPE_VISITANTE);
 //			LOGGER.info("Url logo equipe Visitante: {}",urlLogoEquipeVisitante);
+			return partida;
 			
-			
-	
 		} catch (IOException e) {
 			LOGGER.error("ERRO AO CONECTAR NA URL COM JSOUP -> {}", e.getMessage());
 		}
 		
-		return partida;
+		return null;
 	}
 	
 	public StatusPartida obtemStatusPartida(Document document) {
@@ -262,6 +267,18 @@ public class ScrapingUtil {
 		}
 		
 		return valor;
+	}
+	
+	public String montaUrlGoogle(String complemento) {
+		try {
+			String equipes = complemento.replace(" ", "+").replace("-", "+");
+			
+			return BASE_URL_GOOGLE + equipes;
+		} catch (Exception e) {
+			LOGGER.error("ERRO: {}", e.getMessage());
+			return "ERRO!";
+		}
+
 	}
 
 }
